@@ -41,6 +41,7 @@ from autobahn.twisted.resource import WebSocketResource, WSGIRootResource
 
 import subprocess
 import psutil
+import argparse
 
 
 # Our WebSocket Server protocol
@@ -88,7 +89,27 @@ def page_home():
 
 if __name__ == "__main__":
 
-    log.startLogging(sys.stdout)
+    def str2bool(v):
+        if isinstance(v, bool):
+            return v
+        if v.lower() in ('yes', 'true', 't', 'y', '1'):
+            return True
+        elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+            return False
+        else:
+            raise argparse.ArgumentTypeError('Boolean value expected.')
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-p", "--prod", help="activate prod mode",
+                        type=str2bool, nargs="?", const=True, default=False)
+    args = parser.parse_args()
+
+    if args.prod:
+        print("prod mode")
+        log.startLogging(open('/var/log/wsserver.log', 'w'))
+    else:
+        print("dev mode")
+        log.startLogging(sys.stdout)
 
     # create a Twisted Web resource for our WebSocket server
     wsFactory = WebSocketServerFactory("ws://127.0.0.1:8080")
