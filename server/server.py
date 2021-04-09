@@ -44,36 +44,35 @@ import psutil
 import argparse
 
 
+def cleanUp():
+    for process in psutil.process_iter():
+        if "python" in process.name() and "led-action" in "".join(process.cmdline()):
+            process.terminate()
+            log.msg("terminated " + "".join(process.cmdline()))
+    return
+
+
 # Our WebSocket Server protocol
 class EchoServerProtocol(WebSocketServerProtocol):
 
     def onConnect(self, request):
-        for process in psutil.process_iter():
-            if "python" in process.name() and "led-action" in "".join(process.cmdline()):
-                process.terminate()
+        cleanUp()
         return super().onConnect(request)
 
-    """     def onClose(self):
-        try:
-            process.terminate()
-        finally:
-            pass """
+    def onClose(self):
+        cleanUp()
+        return super().onClose()
 
     def onMessage(self, payload, isBinary):
-        """ if payload == b"start":
-            print("starting")
-            try:
-                process.terminate()
-            finally:
-                process = subprocess.Popen(["sudo" , "python3", "/home/pi/t.py"])
+        if payload == b"start":
+            cleanUp()
+            subprocess.Popen(
+                ["sudo", "python3", "/home/pi/lightstick/led-action/test.py"])
         elif payload == b"stop":
             print("stopping")
-            try:
-                process.terminate()
-            except: 
-                pass
+            cleanUp()
         else:
-            print("unrecognized command") """
+            print("unrecognized command")
         self.sendMessage(payload, isBinary)
 
 
