@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script type="text/javascript">
+        var sock = null
+        var ellog = null
+
+        window.onbeforeunload = function () {
+            if (sock) {
+                sock.onclose = function () { }
+                sock.close()
+            }
+            //return false
+        }
+
+        function connect() {
+            //const wsuri = 'ws://[2003:ef:5f11:9000:2109:278a:fcbc:3daa]/ws'
+            if (sock) {
+                log("already connected. Close the connection if you wish to reconnect.")
+                return
+            }
+            const wsuri = 'ws://localhost:8080/ws'
+
+            if ('WebSocket' in window) {
+                sock = new WebSocket(wsuri)
+            } else if ('MozWebSocket' in window) {
+                sock = new MozWebSocket(wsuri)
+            } else {
+                log('Browser does not support WebSocket!')
+            }
+
+            if (sock) {
+                sock.onopen = function (e) {
+                    log('Connected to ' + e.target.url)
+                }
+
+                sock.onclose = function (e) {
+                    console.log(e)
+                    log(
+                        'Connection closed (wasClean = ' +
+                        e.wasClean +
+                        ', code = ' +
+                        e.code +
+                        ", reason = '" +
+                        e.reason +
+                        "')"
+                    )
+                    sock = null
+                }
+                sock.onerror = function (evt) {
+                    console.log(evt)
+                }
+
+                sock.onmessage = function (e) {
+                    log('Got echo: ' + e.data)
+                }
+            }
+            console.log(sock)
+        }
+
+        function closeHandler() {
+            if (sock) {
+                sock.close(1000, 'Closed by user request')
+                sock = undefined
+            }
+        }
+
+        window.onload = function () {
+            ellog = document.getElementById('log')
+
+            connect()
+        }
+
+        function send() {
+            var msg = document.getElementById('message').value
+            if (sock) {
+                sock.send(msg)
+                log('Sent: ' + msg)
+            } else {
+                log('Not connected.')
+            }
+        }
+
+        function sendString(str) {
+            if (sock) {
+                sock.send(str)
+                log('Sent: ' + str)
+            } else {
+                log('Not connected.')
+            }
+        }
+
+        function log(m) {
+            ellog.innerHTML += m + '\n'
+            ellog.scrollTop = ellog.scrollHeight
+        }
+    </script>
+</head>
+
+<body>
+    <h1>LightStick Control Panel</h1>
+    <noscript>You must enable JavaScript</noscript>
+    <button><a href="/wlan0_info">Configure Wifi/hotspot settings</a></button>
+    <p>
+        Message:
+        <input id="message" type="text" size="50" maxlength="50" value="Hello, world!" autofocus />
+    </p>
+    <div>
+        <button id="BtnSend" onclick="send();">Send Message</button>
+        <button id="BtnReconnect" onclick="connect();">Connect</button>
+        <button id="BtnClose" onclick="closeHandler();">Close Connection</button>
+    </div>
+    <hr />
+    <div>
+        <button id="BtnSendStart" onclick="sendString('start');">
+            Start LED
+        </button>
+        <button id="BtnSendStop" onclick="sendString('stop');">Stop LED</button>
+    </div>
+    <pre id="log" style="height: 20em; overflow-y: scroll; background-color: #faa"></pre>
+    <script>
+        var input = document.getElementById('message')
+        input.addEventListener('keyup', function (event) {
+            if (event.keyCode === 13) {
+                send()
+            }
+        })
+    </script>
+</body>
+
+</html>
