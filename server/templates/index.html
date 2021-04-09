@@ -15,12 +15,13 @@
         }
 
         function connect() {
-            //const wsuri = 'ws://[2003:ef:5f11:9000:2109:278a:fcbc:3daa]/ws'
+            const wsuri = 'ws://[2003:ef:5f11:9000:2109:278a:fcbc:3daa]/ws'
+            log("connecting...")
             if (sock) {
                 log("already connected. Close the connection if you wish to reconnect.")
                 return
             }
-            const wsuri = 'ws://localhost:8080/ws'
+            //const wsuri = 'ws://localhost:8080/ws'
 
             if ('WebSocket' in window) {
                 sock = new WebSocket(wsuri)

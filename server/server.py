@@ -48,11 +48,8 @@ class EchoServerProtocol(WebSocketServerProtocol):
 
     def onConnect(self, request):
         for process in psutil.process_iter():
-            if "python" in process.name():
-                ID = process.pid  # ID of the process
-                name = process.cmdline()
-                print("Process name =", name, ",", "Process ID =", ID)
-                process.kill()
+            if "python" in process.name() and "led-action" in "".join(process.cmdline()):
+                process.terminate()
         return super().onConnect(request)
 
     """     def onClose(self):
