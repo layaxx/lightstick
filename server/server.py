@@ -24,8 +24,7 @@
 #
 ###############################################################################
 
-import uuid
-import sys
+import uuid, sys
 
 from twisted.python import log
 from twisted.internet import reactor
@@ -39,9 +38,7 @@ from autobahn.twisted.websocket import WebSocketServerFactory, \
 
 from autobahn.twisted.resource import WebSocketResource, WSGIRootResource
 
-import subprocess
-import psutil
-import argparse
+import subprocess, psutil, argparse, os, signal
 
 
 def cleanUp():
@@ -50,6 +47,7 @@ def cleanUp():
         print('Child: {}'.format(child.cmdline()))
     for process in psutil.process_iter():
         if "python" in process.name() and "led-action" in "".join(process.cmdline()):
+            # os.killpg(os.getpgid(process.pid), signal.SIGABRT)
             process.terminate()
             log.msg("terminated " + "".join(process.cmdline()))
     return
@@ -62,7 +60,7 @@ class EchoServerProtocol(WebSocketServerProtocol):
         cleanUp()
         return super().onConnect(request)
 
-    def onClose(self):
+    def onClose(self, a, b, c):
         cleanUp()
         return super().onClose()
 
