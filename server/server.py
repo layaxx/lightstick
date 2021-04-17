@@ -73,7 +73,7 @@ class EchoServerProtocol(WebSocketServerProtocol):
             cleanUp()
         else:
             print("unrecognized command")
-        self.sendMessage(payload, isBinary)
+        self.sendMessage(bytes(hallo) + payload, isBinary)
 
 
 # Our WSGI application .. in this case Flask based
@@ -97,6 +97,8 @@ if __name__ == "__main__":
             return False
         else:
             raise argparse.ArgumentTypeError('Boolean value expected.')
+
+    hallo = "sadjfoidsfhpiöf"
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-p", "--prod", help="activate prod mode",
