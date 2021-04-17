@@ -47,7 +47,7 @@ import argparse
 def cleanUp():
     children = psutil.Process().children()
     for child in children:
-        print('Child name is {}'.format(child.name()))
+        print('Child: {}'.format(child.cmdline()))
     for process in psutil.process_iter():
         if "python" in process.name() and "led-action" in "".join(process.cmdline()):
             process.terminate()
