@@ -63,7 +63,7 @@ class EchoServerProtocol(WebSocketServerProtocol):
 
     def onClose(self, a, b, c):
         cleanUp()
-        return super().onClose()
+        return super().onClose(a, b, c)
 
     def onMessage(self, payload, isBinary):
         if payload == b"test":
@@ -80,7 +80,7 @@ class EchoServerProtocol(WebSocketServerProtocol):
                 ["sudo", "python3", "/home/pi/lightstick/led-action/solid.py", color])
         else:
             print("unrecognized command")
-        self.sendMessage(bytes(hallo) + payload, isBinary)
+        self.sendMessage(bytes(hallo, "utf8") + payload, isBinary)
 
 
 # Our WSGI application .. in this case Flask based
