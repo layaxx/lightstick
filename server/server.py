@@ -45,6 +45,9 @@ import argparse
 
 
 def cleanUp():
+    children = psutil.Process().children()
+    for child in children:
+        print('Child name is {}'.format(child.name()))
     for process in psutil.process_iter():
         if "python" in process.name() and "led-action" in "".join(process.cmdline()):
             process.terminate()
@@ -64,13 +67,18 @@ class EchoServerProtocol(WebSocketServerProtocol):
         return super().onClose()
 
     def onMessage(self, payload, isBinary):
-        if payload == b"start":
+        if payload == b"test":
             cleanUp()
             subprocess.Popen(
                 ["sudo", "python3", "/home/pi/lightstick/led-action/test.py"])
         elif payload == b"stop":
             print("stopping")
             cleanUp()
+        elif payload.decode('utf-8').startswith("solid "):
+            color = payload.decode("utf-8")[6:12]
+            print("solid: " + color)
+            subprocess.Popen(
+                ["sudo", "python3", "/home/pi/lightstick/led-action/solid.py", color])
         else:
             print("unrecognized command")
         self.sendMessage(payload, isBinary)

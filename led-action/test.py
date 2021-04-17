@@ -12,6 +12,6 @@ try:
         for y in range(50):
             pixels[50-y] = (0, 0, 0)
             time.sleep(0.1)
-except KeyboardInterrupt:
+finally:
     pixels.deinit()
     sys.exit(0)
