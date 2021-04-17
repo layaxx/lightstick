@@ -47,6 +47,7 @@ def cleanUp():
         print('Child: {}'.format(child.cmdline()))
     for process in psutil.process_iter():
         if "python" in process.name() and "led-action" in "".join(process.cmdline()):
+            print(process.cmdline())
             # os.killpg(os.getpgid(process.pid), signal.SIGABRT)
             process.terminate()
             log.msg("terminated " + "".join(process.cmdline()))
