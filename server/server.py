@@ -90,7 +90,7 @@ class EchoServerProtocol(WebSocketServerProtocol):
             subprocess.Popen(
                 ["sudo", "python3", "/home/pi/lightstick/led-action/static_rainbow.py"])
         else:
-            print("unrecognized command")
+            print("unrecognized command - " + payload.decode("utf-8"))
         self.sendMessage(payload, isBinary)
 
 
