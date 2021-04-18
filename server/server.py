@@ -80,10 +80,15 @@ class EchoServerProtocol(WebSocketServerProtocol):
             print("thorough cleanup requested")
             cleanUp(thorough=True)
         elif payload.decode('utf-8').startswith("solid "):
+            cleanUp()
             color = payload.decode("utf-8")[6:12]
             print("solid: " + color)
             subprocess.Popen(
                 ["sudo", "python3", "/home/pi/lightstick/led-action/solid.py", color])
+        elif payload == b"static rainbow":
+            cleanUp()
+            subprocess.Popen(
+                ["sudo", "python3", "/home/pi/lightstick/led-action/static_rainbow.py"])
         else:
             print("unrecognized command")
         self.sendMessage(payload, isBinary)

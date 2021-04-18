@@ -6,3 +6,4 @@ client.html
 *.ignore
 *.zip
 *.pyc
+__pycache__
