@@ -5,3 +5,4 @@ client.html
 .vscode
 *.ignore
 *.zip
+*.pyc

@@ -4,7 +4,7 @@ import board
 import neopixel
 import sys
 import math
-from .config import NUMBER_OF_LEDS
+from config import NUMBER_OF_LEDS
 
 
 def make_color_gradient(frequency1, frequency2, frequency3,
@@ -41,7 +41,7 @@ if __name__ == '__main__':
 
     colors = make_color_gradient(.3, .3, .3, 0, 2, 4, None, None, None)
 
-    for i in range(math.min(NUMBER_OF_LEDS, len(colors))):
+    for i in range(min(NUMBER_OF_LEDS, len(colors))):
         pixels[i] = colors[i]
 
     while True:

@@ -3,7 +3,7 @@ import neopixel
 import board
 import signal
 import time
-from .config import NUMBER_OF_LEDS
+from config import NUMBER_OF_LEDS
 
 if __name__ == '__main__':
     pixels = neopixel.NeoPixel(board.D18, NUMBER_OF_LEDS)
