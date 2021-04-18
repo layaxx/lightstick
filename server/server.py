@@ -65,7 +65,7 @@ class EchoServerProtocol(WebSocketServerProtocol):
         return super().onConnect(request)
 
     def onClose(self, a, b, c):
-        cleanUp()
+        cleanUp(thorough=True)
         return super().onClose(a, b, c)
 
     def onMessage(self, payload, isBinary):
