@@ -169,8 +169,8 @@
         user-select: none;
         cursor: pointer;
         white-space: nowrap;
-        color: #fff !important;
-        background-color: #009688 !important;
+        color: #fff;
+        background-color: #009688;
         min-width: 150px;
         margin-bottom: 2px;
       }
@@ -187,13 +187,21 @@
       }
 
       button:hover {
-        color: #000 !important;
-        background-color: #ccc !important;
+        color: #000;
+        background-color: #ccc;
       }
 
       button:focus {
         outline: none;
         text-decoration: dotted underline;
+      }
+
+      footer > p {
+        text-align: center;
+      }
+
+      footer > p > a {
+        color: black;
       }
 
       .wrap {
@@ -241,6 +249,29 @@
 
       .warning {
         color: orange;
+      }
+
+      #rainbow {
+        padding: 0px 8px;
+        border: 10px solid;
+        border-image-slice: 1;
+        border-width: 8px;
+        border-image-source: linear-gradient(
+          to left,
+          violet,
+          indigo,
+          blue,
+          green,
+          yellow,
+          orange,
+          red
+        );
+        color: black;
+        background-color: transparent;
+      }
+
+      #rainbow:hover {
+        background-color: white;
       }
 
       #input-color {
@@ -311,6 +342,12 @@
           <input type="color" id="input-color" />
           <button onclick="sendColor()">Start Solid Color</button>
         </div>
+        <hr />
+        <div style="display: flex; flex-wrap: wrap">
+          <button id="rainbow" onclick="sendString('static rainbow')">
+            Start Static Rainbow
+          </button>
+        </div>
       </section>
       <section>
         <h2>Console Interface</h2>
@@ -337,9 +374,14 @@
               <kbd>solid RRGGBB</kbd> = run "solid" LED Action with Color RRGGBB
               (in HEX RGB format)
             </li>
+            <li><kbd>static rainbow</kbd> = run "static rainbow" LED Action</li>
           </ul>
         </div>
       </section>
+      <footer>
+        <hr />
+        <p>Project by <a href="github.com/layaxx">Yannick Lang</a></p>
+      </footer>
     </main>
     <script>
       var input = document.getElementById('console-input')

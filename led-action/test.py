@@ -3,10 +3,10 @@ import neopixel
 import board
 import signal
 import time
-
+from .config import NUMBER_OF_LEDS
 
 if __name__ == '__main__':
-    pixels = neopixel.NeoPixel(board.D18, 60)
+    pixels = neopixel.NeoPixel(board.D18, NUMBER_OF_LEDS)
 
     def sigterm_handler(_signo, _stack_frame):
         pixels.deinit()
@@ -16,10 +16,9 @@ if __name__ == '__main__':
     signal.signal(signal.SIGINT, sigterm_handler)
 
     while True:
-        for _ in range(10):
-            for x in range(0, 50):
-                pixels[x] = (200, 0, 0)
-                time.sleep(0.1)
-            for y in range(50):
-                pixels[50-y] = (0, 0, 0)
-                time.sleep(0.1)
+        for x in range(0, NUMBER_OF_LEDS):
+            pixels[x] = (200, 0, 0)
+            time.sleep(0.1)
+        for y in range(NUMBER_OF_LEDS):
+            pixels[NUMBER_OF_LEDS - 1 - y] = (0, 0, 0)
+            time.sleep(0.1)
