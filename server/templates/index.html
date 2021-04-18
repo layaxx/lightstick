@@ -1,136 +1,353 @@
 <!DOCTYPE html>
 <html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Lightstick Control</title>
+    <meta name="description" content="" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/png" href="app/icons/favicon.png" />
+    <script type="text/javascript">
+      var sock = null
 
-<head>
-  <link rel="icon" type="image/png" href="app/icons/favicon.png" />
-  <script type="text/javascript">
-    var sock = null
-    var ellog = null
-
-    window.onbeforeunload = function() {
-      if (sock) {
-        sock.onclose = function() {}
-        sock.close()
-      }
-      //return false
-    }
-
-    function connect() {
-      log('connecting...')
-      if (sock) {
-        log(
-          'already connected. Close the connection if you wish to reconnect.'
-        )
-        return
-      }
-      // set port to :8080 for local host testing, but remove for prod
-      const wsuri = 'ws://' + window.location.hostname + '/ws'
-
-      if ('WebSocket' in window) {
-        sock = new WebSocket(wsuri)
-      } else if ('MozWebSocket' in window) {
-        sock = new MozWebSocket(wsuri)
-      } else {
-        log('Browser does not support WebSocket!')
+      const Actor = {
+        Client: '',
+        Server: 'server',
+        User: 'user',
       }
 
-      if (sock) {
-        sock.onopen = function(e) {
-          log('Connected to ' + e.target.url)
+      const Level = {
+        Error: 'error',
+        Warning: 'warning',
+      }
+
+      window.onbeforeunload = function () {
+        if (sock) {
+          sock.onclose = function () {}
+          sock.close()
         }
+        //return false
+      }
 
-        sock.onclose = function(e) {
-          console.log(e)
+      function connect() {
+        log('attempting connection ...')
+        if (sock) {
           log(
-            'Connection closed (wasClean = ' +
-            e.wasClean +
-            ', code = ' +
-            e.code +
-            ", reason = '" +
-            e.reason +
-            "')"
+            'already connected. Close the connection if you wish to reconnect.'
           )
-          sock = null
+          return
         }
-        sock.onerror = function(evt) {
-          console.log(evt)
+        // set port to :8080 for local host testing, but remove for prod
+        const wsuri = 'ws://' + window.location.hostname + '/ws'
+
+        if ('WebSocket' in window) {
+          sock = new WebSocket(wsuri)
+        } else if ('MozWebSocket' in window) {
+          sock = new MozWebSocket(wsuri)
+        } else {
+          log('Browser does not support WebSocket!', undefined, Level.Error)
         }
 
-        sock.onmessage = function(e) {
-          log('Got echo: ' + e.data)
+        if (sock) {
+          sock.onopen = function (event) {
+            log('Connected to ' + event.target.url)
+          }
+
+          sock.onclose = function (event) {
+            log(
+              `Connection closed (wasClean = ${event.wasClean}, code = ${event.code}, reason = '${event.reason}')`,
+              undefined,
+              Level.Warning
+            )
+            sock = null
+          }
+
+          sock.onerror = console.log
+
+          sock.onmessage = function (event) {
+            log('Got echo: ' + event.data, Actor.Server)
+          }
         }
       }
-      console.log(sock)
-    }
 
-    function closeHandler() {
-      if (sock) {
-        sock.close(1000, 'Closed by user request')
-        sock = undefined
+      function closeHandler() {
+        if (sock) {
+          sock.close(1000, 'Closed by user request')
+          sock = undefined
+        }
       }
-    }
 
-    window.onload = function() {
-      ellog = document.getElementById('log')
-
-      connect()
-    }
-
-    function send() {
-      var msg = document.getElementById('message').value
-      if (sock) {
-        sock.send(msg)
-        log('Sent: ' + msg)
-      } else {
-        log('Not connected.')
+      window.onload = function () {
+        connect()
       }
-    }
 
-    function sendString(str) {
-      if (sock) {
-        sock.send(str)
-        log('Sent: ' + str)
-      } else {
-        log('Not connected.')
+      function send() {
+        const inputElem = document.getElementById('console-input')
+        const m = inputElem.value
+        inputElem.value = ''
+        if (m === 'connect') {
+          connect()
+          return
+        }
+        if (m === 'close') {
+          closeHandler()
+          return
+        }
+        sendString(m)
       }
-    }
 
-    function log(m) {
-      ellog.innerHTML += m + '\n'
-      ellog.scrollTop = ellog.scrollHeight
-    }
-  </script>
-</head>
-
-<body>
-  <h1>LightStick Control Panel</h1>
-  <noscript>You must enable JavaScript</noscript>
-  <button><a href="/wlan0_info">Configure Wifi/hotspot settings</a></button>
-  <p>
-    Message:
-    <input id="message" type="text" size="50" maxlength="50" value="Hello, world!" autofocus />
-  </p>
-  <div>
-    <button id="BtnSend" onclick="send();">Send Message</button>
-    <button id="BtnReconnect" onclick="connect();">Connect</button>
-    <button id="BtnClose" onclick="closeHandler();">Close Connection</button>
-  </div>
-  <hr />
-  <div>
-    <button id="BtnSendStart" onclick="sendString('start');">
-        Start LED
-      </button>
-    <button id="BtnSendStop" onclick="sendString('stop');">Stop LED</button>
-  </div>
-  <pre id="log" style="height: 20em; overflow-y: scroll; background-color: #faa"></pre>
-  <script>
-    var input = document.getElementById('message')
-    input.addEventListener('keyup', function(event) {
-      if (event.keyCode === 13) {
-        send()
+      function sendColor() {
+        sendString(
+          `solid ${document.getElementById('input-color').value.substring(1)}`
+        )
       }
-    })
-  </script>
-</body>
 
+      function sendString(str) {
+        if (sock) {
+          sock.send(str)
+          log('Sent: ' + str, Actor.User)
+        } else {
+          log('Not connected.')
+        }
+      }
+
+      function log(m, actor, level) {
+        const newLog = document.getElementById('newlog')
+        const newParagraph = document.createElement('p')
+        if (actor) {
+          newParagraph.classList = actor
+        }
+        if (level) {
+          newParagraph.classList += level
+        }
+        newParagraph.innerText = m
+        newLog.appendChild(newParagraph)
+        newLog.scrollTop = newLog.scrollHeight
+      }
+    </script>
+    <link
+      rel="stylesheet"
+      media="screen"
+      href="https://fontlibrary.org//face/liera-sans"
+      type="text/css"
+    />
+    <style>
+      body {
+        font-family: 'LieraSansRegular';
+        font-weight: normal;
+        font-style: normal;
+        background: #fff1e0;
+        background: linear-gradient(150deg, #fff1e0 18%, #cdebfa 77%);
+        background: -moz-linear-gradient(150deg, #fff1e0 18%, #cdebfa 77%);
+        background: -webkit-linear-gradient(150deg, #fff1e0 18%, #cdebfa 77%);
+        background-attachment: fixed;
+      }
+
+      main {
+        margin: auto;
+        max-width: 80rem;
+      }
+
+      button {
+        -webkit-text-size-adjust: 100%;
+        box-sizing: inherit;
+        font: inherit;
+        margin: 0;
+        text-transform: none;
+        -webkit-appearance: button;
+        border: none;
+        display: inline-block;
+        padding: 8px 16px;
+        vertical-align: middle;
+        overflow: hidden;
+        text-decoration: none;
+        text-align: center;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        cursor: pointer;
+        white-space: nowrap;
+        color: #fff !important;
+        background-color: #009688 !important;
+        min-width: 150px;
+        margin-bottom: 2px;
+      }
+
+      kbd {
+        border-radius: 2px;
+        padding: 2px 5px;
+        border: 1px solid black;
+        background-color: white;
+      }
+
+      li {
+        margin-block: 3px;
+      }
+
+      button:hover {
+        color: #000 !important;
+        background-color: #ccc !important;
+      }
+
+      button:focus {
+        outline: none;
+        text-decoration: dotted underline;
+      }
+
+      .wrap {
+        height: 20rem;
+        background-color: #222;
+        color: white;
+        margin: 1rem;
+        margin-bottom: 0;
+        display: flex;
+      }
+
+      .wrap > div {
+        overflow-y: auto;
+        max-height: 19rem;
+        width: 100%;
+        padding: 0rem 1rem 0rem 1rem;
+        align-self: flex-end;
+        display: block;
+        font-family: monospace;
+        white-space: pre;
+      }
+
+      .wrap > div > p {
+        margin: 0;
+      }
+
+      .wrap > div > p::before {
+        content: 'Client >> ';
+        color: greenyellow;
+      }
+
+      .server::before {
+        content: 'Server >> ';
+        color: greenyellow;
+      }
+
+      .user::before {
+        content: 'User@Client >> ';
+        color: greenyellow;
+      }
+
+      .error {
+        color: red;
+      }
+
+      .warning {
+        color: orange;
+      }
+
+      #input-color {
+        min-width: 150px;
+        padding: 5px 16px;
+        margin-right: 2px;
+      }
+
+      #console-input-wrapper {
+        margin: 0;
+        margin-left: 1rem;
+        margin-right: 1rem;
+        background-color: #222;
+        white-space: nowrap;
+        overflow-x: hidden;
+        font-family: monospace;
+        padding: 0rem 0rem 0.5rem 1rem;
+        color: greenyellow;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+
+      #console-input {
+        margin-left: 0.5rem;
+        flex-grow: 1;
+        background-color: #222;
+        color: white;
+        border-right: none;
+      }
+
+      #console-input:focus {
+        outline: none;
+      }
+
+      #BtnSend {
+        margin-right: 1rem;
+        float: right;
+      }
+    </style>
+  </head>
+
+  <body>
+    <main>
+      <h1>LightStick Control Panel</h1>
+      <noscript>You must enable JavaScript</noscript>
+      <a href="/wlan0_info"><button>Configure Wifi/hotspot settings</button></a>
+
+      <section>
+        <h2>Graphical Interface</h2>
+        <div>
+          <button id="BtnReconnect" onclick="connect();">Connect</button>
+          <button id="BtnClose" onclick="closeHandler();">
+            Close Connection
+          </button>
+        </div>
+        <hr />
+        <div>
+          <button id="BtnSendStart" onclick="sendString('start');">
+            Start LED test
+          </button>
+          <button id="BtnSendStop" onclick="sendString('stop');">
+            Stop LED Action
+          </button>
+        </div>
+        <hr />
+        <div style="display: flex; flex-wrap: wrap">
+          <input type="color" id="input-color" />
+          <button onclick="sendColor()">Start Solid Color</button>
+        </div>
+      </section>
+      <section>
+        <h2>Console Interface</h2>
+        <div class="wrap"><div id="newlog"></div></div>
+        <p id="console-input-wrapper">
+          User@Client >><input type="text" id="console-input" autofocus />
+        </p>
+        <button id="BtnSend" onclick="send();">Send Message</button>
+        <div style="margin: 3rem 1rem">
+          <h3>Available Commands:</h3>
+          <ul>
+            <li><kbd>connect</kbd> = connect to WS Server</li>
+            <li><kbd>close</kbd> = close connection to WS Server</li>
+            <li>
+              <kbd> clean</kbd> | <kbd>cleanup</kbd> = stop all LED Actions (=>
+              perform thorough cleanup)
+            </li>
+            <li>
+              <kbd>stop</kbd> = stop current LED Action (=> perform non-thorough
+              cleanup)
+            </li>
+            <li><kbd>test</kbd> = run "test" LED Action</li>
+            <li>
+              <kbd>solid RRGGBB</kbd> = run "solid" LED Action with Color RRGGBB
+              (in HEX RGB format)
+            </li>
+          </ul>
+        </div>
+      </section>
+    </main>
+    <script>
+      var input = document.getElementById('console-input')
+      input.addEventListener('keyup', function (event) {
+        if (event.keyCode === 13) {
+          send()
+        }
+      })
+    </script>
+  </body>
 </html>

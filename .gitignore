@@ -4,3 +4,4 @@ client.html
 *.old
 .vscode
 *.ignore
+*.zip

@@ -24,7 +24,11 @@
 #
 ###############################################################################
 
-import uuid, sys
+import uuid
+import sys
+import subprocess
+import psutil
+import argparse
 
 from twisted.python import log
 from twisted.internet import reactor
@@ -38,27 +42,26 @@ from autobahn.twisted.websocket import WebSocketServerFactory, \
 
 from autobahn.twisted.resource import WebSocketResource, WSGIRootResource
 
-import subprocess, psutil, argparse, os, signal
 
-
-def cleanUp():
-    children = psutil.Process().children()
-    for child in children:
-        print('Child: {}'.format(child.cmdline()))
-    for process in psutil.process_iter():
-        if "python" in process.name() and "led-action" in "".join(process.cmdline()):
-            print(process.cmdline())
-            # os.killpg(os.getpgid(process.pid), signal.SIGABRT)
-            process.terminate()
-            log.msg("terminated " + "".join(process.cmdline()))
-    return
+def cleanUp(thorough=False):
+    if thorough:
+        log.msg("Thorough Cleanup initiated")
+        for process in psutil.process_iter():
+            if "python" in process.name() and "led-action" in "".join(process.cmdline()):
+                process.terminate()
+                log.msg("terminated " + "".join(process.cmdline()))
+    else:
+        for child in psutil.Process().children():
+            child.terminate()
+            log.msg("terminated " + "".join(child.cmdline()))
+    log.msg("Cleanup completed")
 
 
 # Our WebSocket Server protocol
 class EchoServerProtocol(WebSocketServerProtocol):
 
     def onConnect(self, request):
-        cleanUp()
+        cleanUp(thorough=True)
         return super().onConnect(request)
 
     def onClose(self, a, b, c):
@@ -73,6 +76,9 @@ class EchoServerProtocol(WebSocketServerProtocol):
         elif payload == b"stop":
             print("stopping")
             cleanUp()
+        elif payload == b"clean" or payload == b"cleanup":
+            print("thorough cleanup requested")
+            cleanUp(thorough=True)
         elif payload.decode('utf-8').startswith("solid "):
             color = payload.decode("utf-8")[6:12]
             print("solid: " + color)
@@ -80,7 +86,7 @@ class EchoServerProtocol(WebSocketServerProtocol):
                 ["sudo", "python3", "/home/pi/lightstick/led-action/solid.py", color])
         else:
             print("unrecognized command")
-        self.sendMessage(bytes(hallo, "utf8") + payload, isBinary)
+        self.sendMessage(payload, isBinary)
 
 
 # Our WSGI application .. in this case Flask based
@@ -104,8 +110,6 @@ if __name__ == "__main__":
             return False
         else:
             raise argparse.ArgumentTypeError('Boolean value expected.')
-
-    hallo = "sadjfoidsfhpiöf"
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-p", "--prod", help="activate prod mode",
