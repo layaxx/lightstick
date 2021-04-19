@@ -88,10 +88,10 @@ class EchoServerProtocol(WebSocketServerProtocol):
                 ["sudo", "python3", "/home/pi/lightstick/led-action/solid.py", color])
         elif payload.decode('utf-8').startswith("brightness "):
             os.environ["ls_c_brightness"] = payload.decode("utf-8")[11:14]
-        elif payload == b"static rainbow":
+        elif payload == b"rainbow static":
             cleanUp()
             subprocess.Popen(
-                ["sudo", "python3", "/home/pi/lightstick/led-action/static_rainbow.py"])
+                ["sudo", "python3", "/home/pi/lightstick/led-action/rainbow_static.py"])
         elif payload == b"fix":
             subprocess.Popen(
                 ["sudo", "bash", "/home/pi/s.sh"])
