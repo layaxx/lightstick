@@ -4,7 +4,8 @@ import board
 import neopixel
 import sys
 import math
-from config import NUMBER_OF_LEDS
+import os
+from config import NUMBER_OF_LEDS, MAX_BRIGHTNESS
 
 
 def make_color_gradient(frequency1, frequency2, frequency3,
@@ -30,7 +31,12 @@ def make_color_gradient(frequency1, frequency2, frequency3,
 
 
 if __name__ == '__main__':
-    pixels = neopixel.NeoPixel(board.D18, NUMBER_OF_LEDS)
+    try:
+        custom_brightness = min(max(float(os.environ.get(
+            "ls_c_brightness", str(MAX_BRIGHTNESS))), 0.05), 1)
+    except ValueError:
+        custom_brightness = MAX_BRIGHTNESS
+    pixels = neopixel.NeoPixel(board.D18, NUMBER_OF_LEDS, custom_brightness)
 
     def sigterm_handler(_signo, _stack_frame):
         pixels.deinit()

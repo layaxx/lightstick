@@ -330,6 +330,25 @@
         </div>
         <hr />
         <div>
+          <p>
+            <input
+              type="range"
+              id="input-brightness"
+              min="0.15"
+              max="1"
+              step="0.01"
+              value="0.2"
+            /><span id="brightness-value">0.2</span>
+          </p>
+          <button
+            id="brightness"
+            onclick="sendString('brightness ' + document.getElementById('input-brightness').value.replace('0.','.' ));"
+          >
+            Change Brightness
+          </button>
+        </div>
+        <hr />
+        <div>
           <button id="BtnSendStart" onclick="sendString('start');">
             Start LED test
           </button>
@@ -375,6 +394,11 @@
               (in HEX RGB format)
             </li>
             <li><kbd>static rainbow</kbd> = run "static rainbow" LED Action</li>
+            <li>
+              <kbd>brightness [VAL]</kbd> = change brightness to val (min 0.05,
+              max 1), no more than two digits after point (eg. "brightness
+              .25"). Leading 0 should be omitted.
+            </li>
           </ul>
         </div>
       </section>
@@ -390,6 +414,14 @@
           send()
         }
       })
+      document
+        .getElementById('input-brightness')
+        .addEventListener(
+          'input',
+          (event) =>
+            (document.getElementById('brightness-value').innerText =
+              event.target.value)
+        )
     </script>
   </body>
 </html>

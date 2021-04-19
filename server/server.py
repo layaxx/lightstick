@@ -29,6 +29,7 @@ import sys
 import subprocess
 import psutil
 import argparse
+import os
 
 from twisted.python import log
 from twisted.internet import reactor
@@ -85,6 +86,8 @@ class EchoServerProtocol(WebSocketServerProtocol):
             print("solid: " + color)
             subprocess.Popen(
                 ["sudo", "python3", "/home/pi/lightstick/led-action/solid.py", color])
+        elif payload.decode('utf-8').startswith("brightness "):
+            os.environ["ls_c_brightness"] = payload.decode("utf-8")[11:14]
         elif payload == b"static rainbow":
             cleanUp()
             subprocess.Popen(
