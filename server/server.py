@@ -92,6 +92,11 @@ class EchoServerProtocol(WebSocketServerProtocol):
             cleanUp()
             subprocess.Popen(
                 ["sudo", "python3", "/home/pi/lightstick/led-action/rainbow_static.py"])
+        elif payload.decode('utf-8').startswith("rainbow active "):
+            cleanUp()
+            duration = payload.decode("utf-8")[15:18]
+            subprocess.Popen(
+                ["sudo", "python3", "/home/pi/lightstick/led-action/rainbow_active.py", duration])
         elif payload == b"fix":
             subprocess.Popen(
                 ["sudo", "bash", "/home/pi/s.sh"])

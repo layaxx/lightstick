@@ -48,8 +48,16 @@ if __name__ == '__main__':
     #colors = make_color_gradient(.3, .3, .3, 0, 2, 4, None, None, None)
     colors = make_color_gradient(0.11, 0.11, 0.11, 2, 4, 6, None, None, None)
 
-    for i in range(min(NUMBER_OF_LEDS, len(colors))):
-        pixels[i] = colors[i]
+    try:
+        duration = int(sys.argv[1])
+    except:
+        duration = 60
+
+    timeout = duration/NUMBER_OF_LEDS
+
+    for color in colors:
+        pixels.fill(color)
+        time.sleep(timeout)
 
     while True:
         time.sleep(2)

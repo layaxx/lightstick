@@ -280,10 +280,66 @@
         );
         color: black;
         background-color: transparent;
+        margin-bottom: 1rem;
       }
 
       #rainbow:hover {
         background-color: white;
+      }
+
+      #input-color {
+        min-width: 150px;
+        padding: 5px 16px;
+        margin-right: 2px;
+      }
+
+      #rainbow-active {
+        padding: 0px 8px;
+        border: 10px solid;
+        border-image-slice: 1;
+        border-width: 8px;
+        border-image-source: linear-gradient(
+          to left,
+          violet,
+          indigo,
+          blue,
+          green,
+          yellow,
+          orange,
+          red
+        );
+        color: black;
+        background-color: transparent;
+      }
+
+      @keyframes test {
+        0% {
+          border-color: violet;
+        }
+        17% {
+          border-color: indigo;
+        }
+        34% {
+          border-color: blue;
+        }
+        51% {
+          border-color: green;
+        }
+        68% {
+          border-color: yellow;
+        }
+        85% {
+          border-color: orange;
+        }
+        100% {
+          border-color: red;
+        }
+      }
+
+      #rainbow-active:hover {
+        background-color: white;
+        border-image-source: none;
+        animation: test 5s linear infinite alternate-reverse;
       }
 
       #input-color {
@@ -378,10 +434,24 @@
           <button onclick="sendColor()">Start Solid Color</button>
         </div>
         <hr />
-        <div style="display: flex; flex-wrap: wrap">
+        <div>
           <button id="rainbow" onclick="sendString('rainbow static')">
             Start Static Rainbow
           </button>
+          <div style="display: flex; flex-wrap: wrap">
+            <input
+              id="rainbow-duration"
+              type="number"
+              value="60"
+              style="width: 175px; margin-right: 2px"
+            />
+            <button
+              id="rainbow-active"
+              onclick="sendString('rainbow active ' + document.getElementById('rainbow-duration').value)"
+            >
+              Start Active Rainbow
+            </button>
+          </div>
         </div>
       </section>
       <section>
@@ -406,10 +476,13 @@
             </li>
             <li><kbd>test</kbd> = run "test" LED Action</li>
             <li>
-              <kbd>solid RRGGBB</kbd> = run "solid" LED Action with Color RRGGBB
-              (in HEX RGB format)
+              <kbd>solid [RRGGBB]</kbd> = run "solid" LED Action with Color
+              RRGGBB (in HEX RGB format)
             </li>
-            <li><kbd>rainbow static</kbd> = run "static rainbow" LED Action</li>
+            <li><kbd>rainbow static</kbd> = run "rainbow static" LED Action</li>
+            <li>
+              <kbd>rainbow active [SSS]</kbd> = run "rainbow active" LED Action
+            </li>
             <li>
               <kbd>brightness [VAL]</kbd> = change brightness to val (min 0.05,
               max 1), no more than two digits after point (eg. "brightness
