@@ -251,6 +251,18 @@
         color: orange;
       }
 
+      #brightness-wrapper {
+        display: flex;
+        flex-wrap: wrap;
+      }
+
+      #brightness-wrapper > p {
+        -webkit-text-size-adjust: 100%;
+        padding: 8px 14px;
+        margin: 0;
+        min-width: 150px;
+      }
+
       #rainbow {
         padding: 0px 8px;
         border: 10px solid;
@@ -318,7 +330,11 @@
     <main>
       <h1>LightStick Control Panel</h1>
       <noscript>You must enable JavaScript</noscript>
-      <a href="/wlan0_info"><button>Configure Wifi/hotspot settings</button></a>
+      <a href="/wlan0_info"
+        ><button style="white-space: normal">
+          Configure Wifi/Hotspot settings
+        </button></a
+      >
 
       <section>
         <h2>Graphical Interface</h2>
@@ -329,7 +345,7 @@
           </button>
         </div>
         <hr />
-        <div>
+        <div id="brightness-wrapper">
           <p>
             <input
               type="range"
