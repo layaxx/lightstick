@@ -36,7 +36,8 @@ if __name__ == '__main__':
             "ls_c_brightness", str(MAX_BRIGHTNESS))), 0.05), 1)
     except ValueError:
         custom_brightness = MAX_BRIGHTNESS
-    pixels = neopixel.NeoPixel(board.D18, NUMBER_OF_LEDS, custom_brightness)
+    pixels = neopixel.NeoPixel(
+        board.D18, NUMBER_OF_LEDS, brightness=custom_brightness)
 
     def sigterm_handler(_signo, _stack_frame):
         pixels.deinit()
