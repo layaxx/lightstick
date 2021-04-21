@@ -30,6 +30,7 @@ import subprocess
 import psutil
 import argparse
 import os
+import base64
 
 from twisted.python import log
 from twisted.internet import reactor
@@ -97,6 +98,18 @@ class EchoServerProtocol(WebSocketServerProtocol):
             duration = payload.decode("utf-8")[15:18]
             subprocess.Popen(
                 ["sudo", "python3", "/home/pi/lightstick/led-action/rainbow_active.py", duration])
+
+        elif payload.decode('utf-8').startswith("image "):
+            cleanUp()
+
+            duration = payload.decode("utf-8")[6:9]
+
+            image = payload.decode("utf-8")[9:]
+            with open('/home/pi/lightstick/led-action/image.data', "wb") as handle:
+                handle.write(base64.b64decode(image))
+
+            subprocess.Popen(
+                ["sudo", "python3", "/home/pi/lightstick/led-action/image.py", duration])
         elif payload == b"fix":
             subprocess.Popen(
                 ["sudo", "bash", "/home/pi/s.sh"])

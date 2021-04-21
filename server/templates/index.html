@@ -102,11 +102,11 @@
       }
 
       function sendString(str) {
-        if (sock) {
+        if (sock && sock.readyState === 1) {
           sock.send(str)
           log('Sent: ' + str, Actor.User)
         } else {
-          log('Not connected.')
+          log(`Not connected. [${str}]`)
         }
       }
 
@@ -311,6 +311,18 @@
         margin-right: 2px;
       }
 
+      #rainbow-duration {
+        width: 175px;
+        margin-right: 2px;
+        padding: 0.5rem;
+        background: none;
+        border: none;
+        outline: 3px solid black;
+        outline-offset: -4px;
+        font-weight: bolder;
+        font-size: larger;
+      }
+
       #rainbow-active {
         padding: 0px 8px;
         border: 10px solid;
@@ -457,12 +469,7 @@
             Start Static Rainbow
           </button>
           <div style="display: flex; flex-wrap: wrap">
-            <input
-              id="rainbow-duration"
-              type="number"
-              value="60"
-              style="width: 175px; margin-right: 2px"
-            />
+            <input id="rainbow-duration" type="number" value="60" />
             <button
               id="rainbow-active"
               onclick="sendString('rainbow active ' + document.getElementById('rainbow-duration').value)"
@@ -470,6 +477,17 @@
               Start Active Rainbow
             </button>
           </div>
+        </div>
+        <hr />
+        <div style="display: flex; flex-wrap: wrap">
+          <input id="image-duration" type="number" value="60" />
+          <input id="image-data" type="file" />
+          <button
+            id="image-send"
+            onclick="sendString(`image ${document.getElementById('image-duration').value} ${btoa(document.getElementById('image-data').files[0])}`)"
+          >
+            Start Active Rainbow
+          </button>
         </div>
       </section>
       <section>
