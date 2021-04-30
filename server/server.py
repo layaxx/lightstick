@@ -15,7 +15,7 @@ from autobahn.twisted.websocket import WebSocketServerFactory, \
 from autobahn.twisted.resource import WebSocketResource, WSGIRootResource
 
 
-def cleanUp(thorough=False):
+def clean_up(thorough=False):
     if thorough:
         log.msg("Thorough Cleanup initiated")
         for process in psutil.process_iter():
@@ -32,37 +32,37 @@ def cleanUp(thorough=False):
 class EchoServerProtocol(WebSocketServerProtocol):
 
     def onConnect(self, request):
-        cleanUp(thorough=True)
+        clean_up(thorough=True)
         return super().onConnect(request)
 
     def onClose(self, a, b, c):
-        cleanUp(thorough=True)
+        clean_up(thorough=True)
         return super().onClose(a, b, c)
 
-    def onMessage(self, payload, isBinary):
+    def onMessage(self, payload, is_binary):
         decoded = payload.decode('utf-8')
         [command, *arguments] = decoded.split(" ")
         command = command.lower()
 
         if command == "test":
-            cleanUp()
+            clean_up()
             subprocess.Popen(
                 ["sudo", "python3", "/home/pi/lightstick/led-action/test.py"])
 
         elif command == "stop":
             print("stopping")
-            cleanUp()
+            clean_up()
             self.sendMessage(
-                bytes("executed non-thorough cleanup", "utf-8"), isBinary)
+                bytes("executed non-thorough cleanup", "utf-8"), is_binary)
 
         elif command == "clean" or command == "cleanup":
             print("thorough cleanup requested")
-            cleanUp(thorough=True)
+            clean_up(thorough=True)
             self.sendMessage(
-                bytes("executed thorough cleanup", "utf-8"), isBinary)
+                bytes("executed thorough cleanup", "utf-8"), is_binary)
 
         elif command == "solid":
-            cleanUp()
+            clean_up()
             if len(arguments) > 0:
                 color = arguments[0]
             else:
@@ -71,7 +71,7 @@ class EchoServerProtocol(WebSocketServerProtocol):
             subprocess.Popen(
                 ["sudo", "python3", "/home/pi/lightstick/led-action/solid.py", color])
             self.sendMessage(
-                bytes("starting solid LED-Action", "utf-8"), isBinary)
+                bytes("starting solid LED-Action", "utf-8"), is_binary)
 
         elif command == "brightness":
             if len(arguments) > 0:
@@ -80,17 +80,17 @@ class EchoServerProtocol(WebSocketServerProtocol):
                 brightness = ".50"
             os.environ["ls_c_brightness"] = brightness
             self.sendMessage(
-                bytes("updated brightness", "utf-8"), isBinary)
+                bytes("updated brightness", "utf-8"), is_binary)
 
         elif command == "rainbow-static":
-            cleanUp()
+            clean_up()
             subprocess.Popen(
                 ["sudo", "python3", "/home/pi/lightstick/led-action/rainbow_static.py"])
             self.sendMessage(
-                bytes("starting rainbow static LED-Action", "utf-8"), isBinary)
+                bytes("starting rainbow static LED-Action", "utf-8"), is_binary)
 
         elif command == "rainbow-active":
-            cleanUp()
+            clean_up()
             if len(arguments) > 0:
                 duration = arguments[0]
             else:
@@ -98,31 +98,31 @@ class EchoServerProtocol(WebSocketServerProtocol):
             subprocess.Popen(
                 ["sudo", "python3", "/home/pi/lightstick/led-action/rainbow_active.py", duration])
             self.sendMessage(
-                bytes("starting rainbow active LED-Action", "utf-8"), isBinary)
+                bytes("starting rainbow active LED-Action", "utf-8"), is_binary)
 
         elif command == "image-update":
             if len(arguments) > 1:
-                type = arguments[0]
+                img_type = arguments[0]
                 image = arguments[1]
             else:
                 self.sendMessage(
-                    bytes("failed to updated image. Missing arguments", "utf-8"), isBinary)
+                    bytes("failed to updated image. Missing arguments", "utf-8"), is_binary)
                 return
-            with open("/home/pi/lightstick/led-action/image/test." + type, "wb") as handle:
+            with open("/home/pi/lightstick/led-action/image/test." + img_type, "wb") as handle:
                 handle.write(base64.b64decode(image))
             self.sendMessage(
-                bytes("updated image", "utf-8"), isBinary)
+                bytes("updated image", "utf-8"), is_binary)
 
         elif command == "fix":
             subprocess.Popen(
                 ["sudo", "bash", "/home/pi/s.sh"])
             self.sendMessage(
-                bytes("executing startup-fix utility", "utf-8"), isBinary)
+                bytes("executing startup-fix utility", "utf-8"), is_binary)
 
         else:
             print("unrecognized command - " + command)
             self.sendMessage(
-                bytes("unrecognized command - " + command, "utf-8"), isBinary)
+                bytes("unrecognized command - " + command, "utf-8"), is_binary)
 
 
 app = Flask(__name__)

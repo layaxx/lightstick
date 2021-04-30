@@ -3,31 +3,9 @@ import signal
 import board
 import neopixel
 import sys
-import math
 import os
 from config import NUMBER_OF_LEDS, MAX_BRIGHTNESS
-
-
-def make_color_gradient(frequency1, frequency2, frequency3,
-                        phase1, phase2, phase3,
-                        center, width, len):
-    # https://krazydad.com/tutorials/makecolors.php
-    if (center is None):
-        center = 128
-    if (width is None):
-        width = 127
-    if (len is None):
-        len = NUMBER_OF_LEDS
-
-    result = []
-
-    for i in range(len):
-        red = math.sin(frequency1*i + phase1) * width + center
-        grn = math.sin(frequency2*i + phase2) * width + center
-        blu = math.sin(frequency3*i + phase3) * width + center
-        result.append((math.floor(red), math.floor(grn), math.floor(blu)))
-
-    return result
+from rainbow_utility import make_color_gradient
 
 
 if __name__ == '__main__':
@@ -46,8 +24,8 @@ if __name__ == '__main__':
     signal.signal(signal.SIGTERM, sigterm_handler)
     signal.signal(signal.SIGINT, sigterm_handler)
 
-    #colors = make_color_gradient(.3, .3, .3, 0, 2, 4, None, None, None)
-    colors = make_color_gradient(0.11, 0.11, 0.11, 2, 4, 6, None, None, None)
+    colors = make_color_gradient(
+        0.11, 0.11, 0.11, 2, 4, 6, None, None, NUMBER_OF_LEDS)
 
     for i in range(min(NUMBER_OF_LEDS, len(colors))):
         pixels[i] = colors[i]

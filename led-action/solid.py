@@ -9,7 +9,7 @@ from config import NUMBER_OF_LEDS, MAX_BRIGHTNESS
 
 def hex_to_rgb(hex):
     if not len(hex) == 6:
-        raise Exception("Not a valid Hex Color")
+        raise ValueError("Not a valid Hex Color")
     else:
         return tuple(int(hex[i:i+2], 16) for i in (0, 2, 4))
 
