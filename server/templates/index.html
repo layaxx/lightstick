@@ -64,7 +64,7 @@
           sock.onerror = console.log
 
           sock.onmessage = function (event) {
-            log('Got echo: ' + event.data, Actor.Server)
+            log(event.data, Actor.Server)
           }
         }
       }
@@ -115,9 +115,11 @@
         const newParagraph = document.createElement('p')
         if (actor) {
           newParagraph.classList = actor
+        } else {
+          newParagraph.classList = 'client'
         }
         if (level) {
-          newParagraph.classList += level
+          newParagraph.classList += ' ' + level
         }
         newParagraph.innerText = m
         newLog.appendChild(newParagraph)
@@ -291,11 +293,6 @@
         margin: 0;
       }
 
-      .wrap > div > p::before {
-        content: 'Client >> ';
-        color: greenyellow;
-      }
-
       div::-webkit-scrollbar {
         width: 8px; /* width of the entire scrollbar */
         height: 2px;
@@ -317,6 +314,11 @@
 
       .user::before {
         content: 'User@Client >> ';
+        color: greenyellow;
+      }
+
+      .client::before {
+        content: 'Client >> ';
         color: greenyellow;
       }
 
