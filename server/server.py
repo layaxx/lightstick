@@ -1,29 +1,3 @@
-###############################################################################
-#
-# The MIT License (MIT)
-#
-# Copyright (c) Crossbar.io Technologies GmbH
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
-#
-###############################################################################
-
 import uuid
 import sys
 import subprocess
@@ -31,17 +5,13 @@ import psutil
 import argparse
 import os
 import base64
-
 from twisted.python import log
 from twisted.internet import reactor
 from twisted.web.server import Site
 from twisted.web.wsgi import WSGIResource
-
 from flask import Flask, render_template
-
 from autobahn.twisted.websocket import WebSocketServerFactory, \
     WebSocketServerProtocol
-
 from autobahn.twisted.resource import WebSocketResource, WSGIRootResource
 
 
@@ -59,7 +29,6 @@ def cleanUp(thorough=False):
     log.msg("Cleanup completed")
 
 
-# Our WebSocket Server protocol
 class EchoServerProtocol(WebSocketServerProtocol):
 
     def onConnect(self, request):
@@ -71,54 +40,90 @@ class EchoServerProtocol(WebSocketServerProtocol):
         return super().onClose(a, b, c)
 
     def onMessage(self, payload, isBinary):
-        if payload == b"test":
+        decoded = payload.decode('utf-8')
+        [command, *arguments] = decoded.split(" ")
+
+        if command == "test":
             cleanUp()
             subprocess.Popen(
                 ["sudo", "python3", "/home/pi/lightstick/led-action/test.py"])
-        elif payload == b"stop":
+
+        elif command == "stop":
             print("stopping")
             cleanUp()
-        elif payload == b"clean" or payload == b"cleanup":
+            self.sendMessage(
+                bytes("executed non-thorough cleanup", "utf-8"), isBinary)
+
+        elif command == "clean" or command == "cleanup":
             print("thorough cleanup requested")
             cleanUp(thorough=True)
-        elif payload.decode('utf-8').startswith("solid "):
+            self.sendMessage(
+                bytes("executed thorough cleanup", "utf-8"), isBinary)
+
+        elif command == "solid":
             cleanUp()
-            color = payload.decode("utf-8")[6:12]
+            if len(arguments) > 0:
+                color = arguments[0]
+            else:
+                color = "bb0000"
             print("solid: " + color)
             subprocess.Popen(
                 ["sudo", "python3", "/home/pi/lightstick/led-action/solid.py", color])
-        elif payload.decode('utf-8').startswith("brightness "):
-            os.environ["ls_c_brightness"] = payload.decode("utf-8")[11:14]
-        elif payload == b"rainbow static":
+            self.sendMessage(
+                bytes("starting solid LED-Action", "utf-8"), isBinary)
+
+        elif command == "brightness":
+            if len(arguments) > 0:
+                brightness = arguments[0]
+            else:
+                brightness = ".50"
+            os.environ["ls_c_brightness"] = brightness
+            self.sendMessage(
+                bytes("updated brightness", "utf-8"), isBinary)
+
+        elif command == "rainbow static":
             cleanUp()
             subprocess.Popen(
                 ["sudo", "python3", "/home/pi/lightstick/led-action/rainbow_static.py"])
-        elif payload.decode('utf-8').startswith("rainbow active "):
+            self.sendMessage(
+                bytes("starting rainbow static LED-Action", "utf-8"), isBinary)
+
+        elif command == "rainbow active":
             cleanUp()
-            duration = payload.decode("utf-8")[15:18]
+            if len(arguments) > 0:
+                duration = arguments[0]
+            else:
+                duration = "60"
             subprocess.Popen(
                 ["sudo", "python3", "/home/pi/lightstick/led-action/rainbow_active.py", duration])
+            self.sendMessage(
+                bytes("starting rainbow active LED-Action", "utf-8"), isBinary)
 
-        elif payload.decode('utf-8').startswith("image "):
-            cleanUp()
-
-            duration = payload.decode("utf-8")[6:9]
-
-            image = payload.decode("utf-8")[9:]
-            with open('/home/pi/lightstick/led-action/image.data', "wb") as handle:
+        elif command == "image-update":
+            if len(arguments) > 1:
+                type = arguments[0]
+                image = arguments[1]
+            else:
+                self.sendMessage(
+                    bytes("failed to updated image. Misisng arguments", "utf-8"), isBinary)
+                return
+            with open("led-action/image/test." + type, "wb") as handle:
                 handle.write(base64.b64decode(image))
+            self.sendMessage(
+                bytes("updated image", "utf-8"), isBinary)
 
-            subprocess.Popen(
-                ["sudo", "python3", "/home/pi/lightstick/led-action/image.py", duration])
-        elif payload == b"fix":
+        elif command == "fix":
             subprocess.Popen(
                 ["sudo", "bash", "/home/pi/s.sh"])
+            self.sendMessage(
+                bytes("executing startup-fix utility", "utf-8"), isBinary)
+
         else:
-            print("unrecognized command - " + payload.decode("utf-8"))
-        self.sendMessage(payload, isBinary)
+            print("unrecognized command - " + command)
+            self.sendMessage(
+                bytes("unrecognized command - " + command, "utf-8"), isBinary)
 
 
-# Our WSGI application .. in this case Flask based
 app = Flask(__name__)
 app.secret_key = str(uuid.uuid4())
 
@@ -129,7 +134,6 @@ def page_home():
 
 
 if __name__ == "__main__":
-
     def str2bool(v):
         if isinstance(v, bool):
             return v
@@ -152,19 +156,14 @@ if __name__ == "__main__":
         print("dev mode")
         log.startLogging(sys.stdout)
 
-    # create a Twisted Web resource for our WebSocket server
     wsFactory = WebSocketServerFactory("ws://127.0.0.1:8080")
     wsFactory.protocol = EchoServerProtocol
     wsResource = WebSocketResource(wsFactory)
 
-    # create a Twisted Web WSGI resource for our Flask server
     wsgiResource = WSGIResource(reactor, reactor.getThreadPool(), app)
 
-    # create a root resource serving everything via WSGI/Flask, but
-    # the path "/ws" served by our WebSocket stuff
     rootResource = WSGIRootResource(wsgiResource, {b'ws': wsResource})
 
-    # create a Twisted Web Site and run everything
     site = Site(rootResource)
 
     reactor.listenTCP(8080, site)

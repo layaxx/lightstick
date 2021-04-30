@@ -37,7 +37,7 @@
           return
         }
         // set port to :8080 for local host testing, but remove for prod
-        const wsuri = 'ws://' + window.location.hostname + '/ws'
+        const wsuri = 'ws://' + window.location.hostname + ':8080/ws'
 
         if ('WebSocket' in window) {
           sock = new WebSocket(wsuri)
@@ -122,6 +122,51 @@
         newParagraph.innerText = m
         newLog.appendChild(newParagraph)
         newLog.scrollTop = newLog.scrollHeight
+      }
+
+      function readBlob() {
+        var files = document.getElementById('image-data').files
+        if (!files.length) {
+          alert('Please select a file!')
+          return
+        } else if (
+          !(
+            files[0].name.toLowerCase().endsWith('.jpeg') ||
+            files[0].name.toLowerCase().endsWith('.jpg') ||
+            files[0].name.toLowerCase().endsWith('.png')
+          )
+        ) {
+          alert('please select an image (JPG or PNG)')
+          return
+        }
+        var file = files[0]
+        var start = 0
+        var stop = file.size - 1
+
+        var reader = new FileReader()
+
+        // If we use onloadend, we need to check the readyState.
+        reader.onloadend = function (evt) {
+          if (evt.target.readyState == FileReader.DONE) {
+            // DONE == 2
+            sendString(
+              `image-update ${files[0].name
+                .toLowerCase()
+                .split('.')
+                .pop()} ${btoa(evt.target.result)}`
+            )
+          }
+        }
+
+        var blob
+        if (file.slice) {
+          blob = file.slice(start, stop + 1)
+        } else if (file.webkitSlice) {
+          blob = file.webkitSlice(start, stop + 1)
+        } else if (file.mozSlice) {
+          blob = file.mozSlice(start, stop + 1)
+        }
+        reader.readAsBinaryString(blob)
       }
     </script>
     <link
@@ -251,6 +296,20 @@
         color: greenyellow;
       }
 
+      div::-webkit-scrollbar {
+        width: 8px; /* width of the entire scrollbar */
+        height: 2px;
+      }
+
+      div::-webkit-scrollbar-track {
+        background: #222; /* color of the tracking area */
+      }
+
+      div::-webkit-scrollbar-thumb {
+        background-color: greenyellow; /* color of the scroll thumb */
+        border: none; /* creates padding around scroll thumb */
+      }
+
       .server::before {
         content: 'Server >> ';
         color: greenyellow;
@@ -311,16 +370,52 @@
         margin-right: 2px;
       }
 
-      #rainbow-duration {
-        width: 175px;
+      input[type='number'] {
         margin-right: 2px;
-        padding: 0.5rem;
-        background: none;
-        border: none;
-        outline: 3px solid black;
-        outline-offset: -4px;
-        font-weight: bolder;
-        font-size: larger;
+        width: 177px;
+      }
+
+      #image-data-wrapper {
+        width: 150px;
+        position: relative;
+        padding: 8px 16px;
+        margin: 10px 0px;
+        text-align: center;
+        color: #fff;
+        background-color: #009688;
+        overflow: hidden;
+      }
+
+      #image-data-wrapper > input[type='file'] {
+        position: absolute;
+        top: 0px;
+        left: 0;
+        right: 0px;
+        bottom: 0px;
+        width: 100%;
+        -webkit-tap-highlight-color: transparent;
+        opacity: 0;
+        z-index: 1;
+        -webkit-text-size-adjust: 100%;
+        margin-bottom: 2px;
+      }
+
+      #image-data-wrapper:hover {
+        color: #000;
+        background-color: #ccc;
+      }
+
+      #image-data-wrapper:active {
+        box-shadow: 0px 5px 13px #ea4539;
+        -webkit-box-shadow: 0px 5px 13px #ea4539;
+        -moz-box-shadow: 0px 5px 13px #ea4539;
+        -o-box-shadow: 0px 5px 13px #ea4539;
+        -ms-box-shadow: 0px 5px 13px #ea4539;
+      }
+
+      #image-update {
+        margin-left: 2px;
+        height: max-content;
       }
 
       #rainbow-active {
@@ -479,14 +574,20 @@
           </div>
         </div>
         <hr />
+        <div style="display: flex; flex-wrap: wrap; place-items: baseline">
+          <div id="image-data-wrapper">
+            Select Image
+            <input id="image-data" type="file" accept="image/*" />
+          </div>
+          <button onclick="readBlob()" id="image-update">update Image</button>
+        </div>
         <div style="display: flex; flex-wrap: wrap">
           <input id="image-duration" type="number" value="60" />
-          <input id="image-data" type="file" />
           <button
             id="image-send"
-            onclick="sendString(`image ${document.getElementById('image-duration').value} ${btoa(document.getElementById('image-data').files[0])}`)"
+            onclick="sendString('image ' + document.getElementById('image-duration').value)"
           >
-            Start Active Rainbow
+            Start Active Image
           </button>
         </div>
       </section>
@@ -532,12 +633,27 @@
               digits after point (eg. "brightness .25"). Leading 0 should be
               omitted.
             </dd>
+            <dt>
+              <kbd>image-update [ENDING] [B64 image data]</kbd>
+            </dt>
+            <dd>
+              update image used as basis for the image LED-Action. ending should
+              be png or jpeg.
+            </dd>
+            <dt>
+              <kbd>image-start [DURATION]</kbd>
+            </dt>
+            <dd>
+              starts the image LED-Action. image can be set via the image-update
+              command. duration is in seconds. [TODO: not yet implemented
+              server-side]
+            </dd>
           </dl>
         </div>
       </section>
       <footer>
         <hr />
-        <p>Project by <a href="github.com/layaxx">Yannick Lang</a></p>
+        <p>Project by <a href="https://github.com/layaxx">Yannick Lang</a></p>
       </footer>
     </main>
     <script>

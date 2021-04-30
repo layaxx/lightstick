@@ -7,3 +7,4 @@ client.html
 *.zip
 *.pyc
 __pycache__
+led-action/image/*
