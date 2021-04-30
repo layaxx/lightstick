@@ -8,3 +8,4 @@ client.html
 *.pyc
 __pycache__
 led-action/image/*
+!led-action/image/dummy.txt
