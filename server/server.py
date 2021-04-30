@@ -105,9 +105,9 @@ class EchoServerProtocol(WebSocketServerProtocol):
                 image = arguments[1]
             else:
                 self.sendMessage(
-                    bytes("failed to updated image. Misisng arguments", "utf-8"), isBinary)
+                    bytes("failed to updated image. Missing arguments", "utf-8"), isBinary)
                 return
-            with open("led-action/image/test." + type, "wb") as handle:
+            with open("/home/pi/lightstick/led-action/image/test." + type, "wb") as handle:
                 handle.write(base64.b64decode(image))
             self.sendMessage(
                 bytes("updated image", "utf-8"), isBinary)

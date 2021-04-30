@@ -37,7 +37,7 @@
           return
         }
         // set port to :8080 for local host testing, but remove for prod
-        const wsuri = 'ws://' + window.location.hostname + ':8080/ws'
+        const wsuri = 'ws://' + window.location.hostname + '/ws'
 
         if ('WebSocket' in window) {
           sock = new WebSocket(wsuri)
