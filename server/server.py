@@ -42,6 +42,7 @@ class EchoServerProtocol(WebSocketServerProtocol):
     def onMessage(self, payload, isBinary):
         decoded = payload.decode('utf-8')
         [command, *arguments] = decoded.split(" ")
+        command = command.lower()
 
         if command == "test":
             cleanUp()
@@ -81,14 +82,14 @@ class EchoServerProtocol(WebSocketServerProtocol):
             self.sendMessage(
                 bytes("updated brightness", "utf-8"), isBinary)
 
-        elif command == "rainbow static":
+        elif command == "rainbow-static":
             cleanUp()
             subprocess.Popen(
                 ["sudo", "python3", "/home/pi/lightstick/led-action/rainbow_static.py"])
             self.sendMessage(
                 bytes("starting rainbow static LED-Action", "utf-8"), isBinary)
 
-        elif command == "rainbow active":
+        elif command == "rainbow-active":
             cleanUp()
             if len(arguments) > 0:
                 duration = arguments[0]

@@ -554,6 +554,9 @@
           <button id="BtnSendStop" onclick="sendString('stop');">
             Stop LED Action
           </button>
+          <button id="BtnSendClean" onclick="sendString('cleanup');">
+            CleanUp
+          </button>
         </div>
         <hr />
         <div style="display: flex; flex-wrap: wrap">
@@ -562,14 +565,14 @@
         </div>
         <hr />
         <div>
-          <button id="rainbow" onclick="sendString('rainbow static')">
+          <button id="rainbow" onclick="sendString('rainbow-static')">
             Start Static Rainbow
           </button>
           <div style="display: flex; flex-wrap: wrap">
             <input id="rainbow-duration" type="number" value="60" />
             <button
               id="rainbow-active"
-              onclick="sendString('rainbow active ' + document.getElementById('rainbow-duration').value)"
+              onclick="sendString('rainbow-active ' + document.getElementById('rainbow-duration').value)"
             >
               Start Active Rainbow
             </button>
@@ -621,10 +624,10 @@
             <dd>
               run "solid" LED Action with Color RRGGBB (in HEX RGB format)
             </dd>
-            <dt><kbd>rainbow static</kbd></dt>
+            <dt><kbd>rainbow-static</kbd></dt>
             <dd>run "rainbow static" LED Action</dd>
             <dt>
-              <kbd>rainbow active [SSS]</kbd>
+              <kbd>rainbow-active [SSS]</kbd>
             </dt>
             <dd>run "rainbow active" LED Action</dd>
             <dt>
