@@ -39,4 +39,10 @@ if __name__ == '__main__':
         time.sleep(timeout)
 
     while True:
-        time.sleep(2)
+        for color in colors:
+            pixels.fill(color)
+            time.sleep(timeout)
+
+        for color in colors.reverse():
+            pixels.fill(color)
+            time.sleep(timeout)

@@ -9,3 +9,4 @@ Users will be able to control the device via web interface.
  - add delay option for active rainbow
  - image-update command seems to reset connection?
  - image LED-Action is not yet implemented
+ - adjusting brightness doesn´t work, sometimes breaks everything 

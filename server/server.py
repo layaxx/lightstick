@@ -23,6 +23,7 @@ def clean_up(thorough=False):
                 process.terminate()
                 log.msg("terminated " + "".join(process.cmdline()))
     else:
+        # this does not seem to do anything at all. At least does not produce desired results
         for child in psutil.Process().children():
             child.terminate()
             log.msg("terminated " + "".join(child.cmdline()))

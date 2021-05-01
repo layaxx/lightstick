@@ -3,7 +3,6 @@ import signal
 import board
 import neopixel
 import sys
-import math
 import os
 from config import NUMBER_OF_LEDS, MAX_BRIGHTNESS
 
