@@ -43,6 +43,6 @@ if __name__ == '__main__':
             pixels.fill(color)
             time.sleep(timeout)
 
-        for color in colors.reverse():
+        for color in colors[::-1]:
             pixels.fill(color)
             time.sleep(timeout)
